@@ -205,6 +205,20 @@ export default function HomeClient() {
     setSelectedBrandId('');
     setSelectedModelId('');
     setSelectedCategoryId('');
+    
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('brand_id');
+    params.delete('model_id');
+    params.delete('category_id');
+    
+    const queryString = params.toString();
+    router.push(queryString ? `/?${queryString}` : '/');
+  };
+
+  const backToStore = () => {
+    setSelectedBrandId('');
+    setSelectedModelId('');
+    setSelectedCategoryId('');
     router.push('/');
   };
 
@@ -384,7 +398,7 @@ export default function HomeClient() {
                 {/* Back to Store Navigation Button */}
                 <div style={{ animation: 'fadeIn var(--transition-fast)' }}>
                   <button 
-                    onClick={clearFilters}
+                    onClick={backToStore}
                     className="admin-secondary-btn"
                     style={{
                       display: 'flex',

@@ -287,6 +287,16 @@ button {
 
   .search-form-container {
     max-width: 100% !important;
+    position: static !important;
+  }
+
+  .search-suggestions-dropdown {
+    position: absolute !important;
+    top: 100% !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: none !important;
   }
 
   .search-input {
@@ -2778,5 +2788,37 @@ vercel-live-feedback {
     margin-top: 24px;
     padding-top: 20px;
     border-top: 1px solid var(--border-color);
+  }
+}
+
+/* Responsive Filter Strip and Catalog Selectors */
+@media (max-width: 768px) {
+  .filter-strip {
+    flex-direction: column;
+    align-items: stretch !important;
+    padding: 14px 16px !important;
+    gap: 12px !important;
+  }
+
+  .filter-title {
+    margin-bottom: 4px;
+    font-size: 13px !important;
+  }
+
+  .filter-selects {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+
+  .filter-select-wrapper {
+    flex: 1 1 calc(50% - 5px) !important;
+    min-width: 130px !important;
+  }
+
+  .filter-select {
+    padding: 10px 32px 10px 12px !important;
+    font-size: 13px !important;
+    height: 40px !important;
   }
 }

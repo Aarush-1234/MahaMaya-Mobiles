@@ -163,9 +163,6 @@ export default function CategoryClient({ slug }) {
   const clearFilters = () => {
     setSelectedBrandId('');
     setSelectedModelId('');
-    if (searchQuery) {
-      router.push(`/category/${slug}`);
-    }
   };
 
   return (
