@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Search, ShoppingBag, Smartphone, Sun, Moon, FolderOpen, ChevronUp, X, MapPin, Phone, Mail, Info } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useShop } from '../context/ShopContext';
+import useBackButtonClose from '../hooks/useBackButtonClose';
 
 function SearchInput() {
   const router = useRouter();
@@ -189,6 +190,12 @@ export default function Header() {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [infoModal, setInfoModal] = useState(null); // null, 'about', 'contact'
+
+  useBackButtonClose({
+    isOpen: infoModal !== null,
+    onClose: () => setInfoModal(null),
+    stateKey: 'about-contact-modal'
+  });
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme') || 'light';

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Minus, Trash2, Send } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useShop } from '../context/ShopContext';
+import useBackButtonClose from '../hooks/useBackButtonClose';
 
 export default function CartDrawer() {
   const {
@@ -18,6 +19,12 @@ export default function CartDrawer() {
   } = useCart();
 
   const { settings } = useShop();
+
+  useBackButtonClose({
+    isOpen: isCartOpen,
+    onClose: () => setIsCartOpen(false),
+    stateKey: 'cart-drawer'
+  });
 
   const [customerDetails, setCustomerDetails] = useState({
     name: '',

@@ -12,6 +12,7 @@ import HeroBanner from './HeroBanner';
 import ProductGrid from './ProductGrid';
 import ProductDetailModal from './ProductDetailModal';
 import { useShop } from '../context/ShopContext';
+import useBackButtonClose from '../hooks/useBackButtonClose';
 
 export default function HomeClient() {
   const { deviceBrands, deviceModels, categories, products, productsLoading, settings } = useShop();
@@ -33,6 +34,24 @@ export default function HomeClient() {
   const [expandedSection, setExpandedSection] = useState(null); // { id, title, products }
   const [expandedCategories, setExpandedCategories] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1200);
+
+  useBackButtonClose({
+    isOpen: !!selectedProduct,
+    onClose: () => setSelectedProduct(null),
+    stateKey: 'product-detail-modal'
+  });
+
+  useBackButtonClose({
+    isOpen: !!expandedSection,
+    onClose: () => setExpandedSection(null),
+    stateKey: 'expanded-section'
+  });
+
+  useBackButtonClose({
+    isOpen: expandedCategories,
+    onClose: () => setExpandedCategories(false),
+    stateKey: 'expanded-categories'
+  });
 
   // Resize listener for responsive limit calculations
   useEffect(() => {
@@ -61,6 +80,12 @@ export default function HomeClient() {
       const prod = products.find(p => p.id === urlProductId);
       if (prod) {
         setSelectedProduct(prod);
+        // Clean up URL product_id param so back button doesn't re-open it
+        if (window.history.replaceState) {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('product_id');
+          window.history.replaceState({}, '', url.pathname + url.search);
+        }
       }
     }
   }, [searchParams, products]);
@@ -633,14 +658,7 @@ export default function HomeClient() {
       {selectedProduct && (
         <ProductDetailModal
           product={selectedProduct}
-          onClose={() => {
-            setSelectedProduct(null);
-            if (window.history.pushState) {
-              const url = new URL(window.location.href);
-              url.searchParams.delete('product_id');
-              window.history.pushState({}, '', url.pathname + url.search);
-            }
-          }}
+          onClose={() => setSelectedProduct(null)}
         />
       )}
 

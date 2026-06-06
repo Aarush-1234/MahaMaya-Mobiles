@@ -10,6 +10,7 @@ import ProductGrid from './ProductGrid';
 import ProductDetailModal from './ProductDetailModal';
 import { useShop } from '../context/ShopContext';
 import { supabase } from '../lib/supabase';
+import useBackButtonClose from '../hooks/useBackButtonClose';
 
 export default function CategoryClient({ slug }) {
   const { deviceBrands, deviceModels } = useShop();
@@ -26,6 +27,12 @@ export default function CategoryClient({ slug }) {
   const [selectedModelId, setSelectedModelId] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  useBackButtonClose({
+    isOpen: !!selectedProduct,
+    onClose: () => setSelectedProduct(null),
+    stateKey: 'product-detail-modal'
+  });
 
   // Loading States
   const [loading, setLoading] = useState(true);
