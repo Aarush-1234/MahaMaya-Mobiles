@@ -5,6 +5,7 @@ import { X, Plus, Minus, Trash2, Send } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useShop } from '../context/ShopContext';
 import useBackButtonClose from '../hooks/useBackButtonClose';
+import useBodyScrollLock from '../hooks/useBodyScrollLock';
 
 export default function CartDrawer() {
   const {
@@ -15,7 +16,8 @@ export default function CartDrawer() {
     removeFromCart,
     cartTotal,
     cartCount,
-    toast
+    toast,
+    clearCart
   } = useCart();
 
   const { settings } = useShop();
@@ -25,6 +27,8 @@ export default function CartDrawer() {
     onClose: () => setIsCartOpen(false),
     stateKey: 'cart-drawer'
   });
+
+  useBodyScrollLock(isCartOpen);
 
   const [customerDetails, setCustomerDetails] = useState({
     name: '',
@@ -68,7 +72,7 @@ export default function CartDrawer() {
     }
 
     // Build the WhatsApp message
-    let message = `Hello ${settings.shop_name || 'COVERS ZONE'},\n`;
+    let message = `Hello ${settings.shop_name || 'Shop Owner'},\n`;
     message += `I want to place an order.\n\n`;
     message += `*Customer Details:*\n`;
     message += `Name: ${customerDetails.name.trim()}\n`;

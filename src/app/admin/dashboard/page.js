@@ -92,7 +92,7 @@ export default function AdminDashboard() {
         <div>
           <h1 className="admin-page-title">Catalog Overview</h1>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-            Real-time status of COVERS ZONE inventory and settings
+            Real-time status of store inventory and settings
           </p>
         </div>
         <button onClick={fetchDashboardData} className="admin-secondary-btn" aria-label="Refresh stats">
@@ -149,13 +149,13 @@ export default function AdminDashboard() {
       </section>
 
       {/* Device Stats and Quick Actions Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '32px' }}>
+      <div className="admin-two-col-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '32px' }}>
         {/* Quick Actions Panel */}
         <div className="admin-card" style={{ padding: '20px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
             Quick Admin Tasks
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+          <div className="admin-quick-actions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
             <button
               onClick={() => router.push('/admin/products?new=true')}
               className="admin-primary-btn"

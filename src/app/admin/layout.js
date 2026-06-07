@@ -17,6 +17,7 @@ import {
   X
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useShop } from '../../context/ShopContext';
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function AdminLayout({ children }) {
   const [session, setSession] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { settings } = useShop();
 
   useEffect(() => {
     // 1. Get initial session
@@ -102,8 +104,29 @@ export default function AdminLayout({ children }) {
         <button onClick={() => setIsMobileOpen(true)} className="admin-hamburger-btn" aria-label="Open navigation menu">
           <Menu size={20} />
         </button>
-        <div className="logo" style={{ fontSize: '18px', color: '#fff' }}>
-          COVERS<span className="zone">ZONE</span> <span style={{ fontSize: '11px', fontWeight: '400', color: 'var(--accent-yellow)' }}>Admin</span>
+        <div className="logo" style={{ fontSize: '18px', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {settings.logo_url ? (
+            <img
+              src={settings.logo_url}
+              alt={settings.shop_name || 'Admin'}
+              style={{ maxHeight: '38px', maxWidth: '140px', objectFit: 'contain' }}
+            />
+          ) : (
+            <span>{settings.shop_name || 'MahaMaya Mobiles'}</span>
+          )}
+          <span style={{
+            fontSize: '10px',
+            fontWeight: '600',
+            color: 'var(--accent-yellow)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            background: 'rgba(234, 179, 8, 0.15)',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            marginLeft: '4px'
+          }}>
+            Admin
+          </span>
         </div>
       </div>
 
@@ -116,10 +139,33 @@ export default function AdminLayout({ children }) {
       <aside className={`admin-sidebar ${isMobileOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
           <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', color: '#fff' }}>
-            <div className="logo-icon" style={{ padding: '3px' }}>
-              <Layers size={16} />
-            </div>
-            COVERS<span className="zone">ZONE</span> <span style={{ fontSize: '11px', fontWeight: '400', color: 'var(--accent-yellow)' }}>Admin</span>
+            {settings.logo_url ? (
+              <img
+                src={settings.logo_url}
+                alt={settings.shop_name || 'Admin'}
+                style={{ maxHeight: '42px', maxWidth: '150px', objectFit: 'contain' }}
+              />
+            ) : (
+              <>
+                <div className="logo-icon" style={{ padding: '3px' }}>
+                  <Layers size={16} />
+                </div>
+                <span>{settings.shop_name || 'MahaMaya Mobiles'}</span>
+              </>
+            )}
+            <span style={{
+              fontSize: '10px',
+              fontWeight: '600',
+              color: 'var(--accent-yellow)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              background: 'rgba(234, 179, 8, 0.15)',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              marginLeft: '4px'
+            }}>
+              Admin
+            </span>
           </div>
           {/* Close button inside sidebar on mobile */}
           <button onClick={() => setIsMobileOpen(false)} className="admin-sidebar-close-btn" aria-label="Close navigation menu">

@@ -3,8 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, ShoppingCart, Check, Shield } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import useBodyScrollLock from '../hooks/useBodyScrollLock';
 
 export default function ProductDetailModal({ product, onClose }) {
+  useBodyScrollLock(!!product);
+  
   const { addToCart } = useCart();
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);

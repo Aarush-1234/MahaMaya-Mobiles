@@ -7,6 +7,7 @@ import { Search, ShoppingBag, Smartphone, Sun, Moon, FolderOpen, ChevronUp, X, M
 import { useCart } from '../context/CartContext';
 import { useShop } from '../context/ShopContext';
 import useBackButtonClose from '../hooks/useBackButtonClose';
+import useBodyScrollLock from '../hooks/useBodyScrollLock';
 
 function SearchInput() {
   const router = useRouter();
@@ -180,6 +181,21 @@ function SearchInput() {
   );
 }
 
+const renderShopName = (name) => {
+  if (!name) return null;
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) {
+    return name;
+  }
+  const lastWord = words.pop();
+  const rest = words.join(' ');
+  return (
+    <>
+      {rest} <span className="zone">{lastWord}</span>
+    </>
+  );
+};
+
 export default function Header() {
   const { cartCount, setIsCartOpen } = useCart();
   const { categories, settings, isLoading } = useShop();
@@ -196,6 +212,8 @@ export default function Header() {
     onClose: () => setInfoModal(null),
     stateKey: 'about-contact-modal'
   });
+
+  useBodyScrollLock(infoModal !== null);
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme') || 'light';
@@ -263,7 +281,7 @@ export default function Header() {
               {settings.logo_url ? (
                 <img
                   src={settings.logo_url}
-                  alt={settings.shop_name || 'COVERS ZONE'}
+                  alt={settings.shop_name || 'MahaMaya Mobiles'}
                   className="logo-img"
                 />
               ) : (
@@ -271,7 +289,7 @@ export default function Header() {
                   <div className="logo-icon">
                     <Smartphone size={20} />
                   </div>
-                  COVERS<span className="zone">ZONE</span>
+                  {renderShopName(settings.shop_name || 'MahaMaya Mobiles')}
                 </>
               )}
             </Link>
@@ -472,7 +490,7 @@ export default function Header() {
                 </div>
 
                 <a
-                  href={`https://wa.me/${settings.whatsapp_number}?text=Hello%20COVERS%20ZONE,%20I%20have%20a%20query.`}
+                href={`https://wa.me/${settings.whatsapp_number}?text=Hello%20${encodeURIComponent(settings.shop_name || 'Shop Owner')},%20I%20have%20a%20query.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="whatsapp-checkout-btn"

@@ -14,9 +14,30 @@ export default function Footer() {
         <div className="footer-grid">
           {/* Column 1: About */}
           <div className="footer-about">
-            <h3 className="footer-about-title">
-              COVERS<span style={{ color: 'var(--accent-yellow)' }}>ZONE</span>
-            </h3>
+            {settings.logo_url ? (
+              <img
+                src={settings.logo_url}
+                alt={settings.shop_name || 'Logo'}
+                className="logo-img"
+                style={{
+                  width: '100%',
+                  maxWidth: '160px',
+                  height: 'auto',
+                  maxHeight: '60px',
+                  objectFit: 'contain',
+                  display: 'block',
+                  marginBottom: '16px'
+                }}
+              />
+            ) : (
+              <h3 className="footer-about-title">
+                {settings.shop_name ? (
+                  settings.shop_name
+                ) : (
+                  <>COVERS<span style={{ color: 'var(--accent-yellow)' }}>ZONE</span></>
+                )}
+              </h3>
+            )}
             <p className="footer-desc">
               {settings.footer_description}
             </p>

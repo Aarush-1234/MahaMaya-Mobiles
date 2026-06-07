@@ -1105,6 +1105,12 @@ button {
   background: rgba(239, 68, 68, 0.05);
 }
 
+@media (max-width: 1023px) {
+  .filter-strip .clear-filters-btn {
+    display: none !important;
+  }
+}
+
 /* Cart Drawer */
 .cart-overlay {
   position: fixed;
@@ -2820,5 +2826,82 @@ vercel-live-feedback {
     padding: 10px 32px 10px 12px !important;
     font-size: 13px !important;
     height: 40px !important;
+  }
+}
+
+/* ==========================================
+   Admin UI Responsiveness Adjustments
+   ========================================== */
+
+/* Fix: Keep sidebar footer visible in mobile drawer */
+@media (max-width: 768px) {
+  .admin-sidebar-footer {
+    display: block !important;
+  }
+}
+
+/* Responsive grid for two column dashboard/admin layouts */
+@media (max-width: 768px) {
+  .admin-two-col-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}
+
+/* Responsive grid for admin forms */
+@media (max-width: 768px) {
+  .admin-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .admin-form-grid > div {
+    grid-column: span 1 !important;
+  }
+}
+
+/* Responsive grid for admin quick actions */
+@media (max-width: 768px) {
+  .admin-quick-actions-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Responsive modal content selector layout */
+.admin-products-selector-modal {
+  max-width: 900px !important;
+  width: 95% !important;
+  height: 80vh !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+@media (max-width: 768px) {
+  .admin-products-selector-modal {
+    width: 100% !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  .admin-modal-split-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    flex: 1 !important;
+  }
+
+  .admin-modal-split-grid > div {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    overflow: visible !important;
+    height: auto !important;
+    flex: none !important;
+  }
+
+  .admin-modal-split-grid > div > div {
+    overflow-y: visible !important;
+    max-height: none !important;
+    flex: none !important;
   }
 }

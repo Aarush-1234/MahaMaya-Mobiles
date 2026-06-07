@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Layers, Lock, Mail, RefreshCw } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
+import { useShop } from '../../../context/ShopContext';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const { settings } = useShop();
 
   // If session already exists, redirect immediately to dashboard
   useEffect(() => {
@@ -58,10 +60,29 @@ export default function AdminLogin() {
         {/* Header */}
         <div className="admin-login-header">
           <div className="logo" style={{ justifyContent: 'center', marginBottom: '8px' }}>
-            <div className="logo-icon">
-              <Layers size={20} />
-            </div>
-            COVERS<span className="zone">ZONE</span>
+            {settings.logo_url ? (
+              <img
+                src={settings.logo_url}
+                alt={settings.shop_name || 'Admin'}
+                style={{
+                  maxHeight: '40px',
+                  maxWidth: '180px',
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+              />
+            ) : (
+              <>
+                <div className="logo-icon">
+                  <Layers size={20} />
+                </div>
+                {settings.shop_name ? (
+                  settings.shop_name
+                ) : (
+                  <>COVERS<span className="zone">ZONE</span></>
+                )}
+              </>
+            )}
           </div>
           <p className="admin-login-subtitle">Sign in to manage your accessories catalog</p>
         </div>

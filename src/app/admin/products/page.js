@@ -748,7 +748,7 @@ function AdminProductsContent() {
 
               {/* Brand */}
               <div className="form-group">
-                <label className="form-label">Product Brand (e.g. Spigen, COVERS ZONE)</label>
+                <label className="form-label">Product Brand (e.g. Spigen)</label>
                 <input
                   type="text"
                   placeholder="e.g. Spigen"

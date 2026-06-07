@@ -13,6 +13,8 @@ export default function AdminBrandsModels() {
   const [models, setModels] = useState([]);
   const [loadingBrands, setLoadingBrands] = useState(true);
   const [loadingModels, setLoadingModels] = useState(true);
+  const [expandedBrands, setExpandedBrands] = useState(false);
+  const [expandedModels, setExpandedModels] = useState(false);
 
   // Brand Form states
   const [isBrandFormOpen, setIsBrandFormOpen] = useState(false);
@@ -343,7 +345,7 @@ export default function AdminBrandsModels() {
       </div>
 
       {/* Split grid for Brands (left) and Models (right) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '24px' }}>
+      <div className="admin-two-col-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '24px' }}>
         
         {/* --- LEFT COLUMN: BRANDS --- */}
         <div>
@@ -395,39 +397,53 @@ export default function AdminBrandsModels() {
             ) : brands.length === 0 ? (
               <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>No brands configured.</div>
             ) : (
-              <div className="admin-table-container">
-                <table className="admin-table" style={{ fontSize: '13px' }}>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Active</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {brands.map(b => (
-                      <tr key={b.id}>
-                        <td style={{ fontWeight: '600' }}>{b.name}</td>
-                        <td>
-                          <button onClick={() => handleToggleBrandActive(b)} aria-label={b.is_active ? 'Deactivate brand' : 'Activate brand'}>
-                            {b.is_active ? (
-                              <span className="badge success" style={{ padding: '2px 6px', fontSize: '10px' }}>Active</span>
-                            ) : (
-                              <span className="badge inactive" style={{ padding: '2px 6px', fontSize: '10px' }}>Inactive</span>
-                            )}
-                          </button>
-                        </td>
-                        <td>
-                          <div className="admin-table-actions">
-                            <button onClick={() => handleOpenEditBrand(b)} className="admin-action-btn edit" style={{ padding: '4px' }}><Edit2 size={13} /></button>
-                            <button onClick={() => handleDeleteBrand(b.id, b.name)} className="admin-action-btn delete" style={{ padding: '4px' }}><Trash2 size={13} /></button>
-                          </div>
-                        </td>
+              <>
+                <div className="admin-table-container">
+                  <table className="admin-table" style={{ fontSize: '13px' }}>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Active</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {(expandedBrands ? brands : brands.slice(0, 4)).map(b => (
+                        <tr key={b.id}>
+                          <td style={{ fontWeight: '600' }}>{b.name}</td>
+                          <td>
+                            <button onClick={() => handleToggleBrandActive(b)} aria-label={b.is_active ? 'Deactivate brand' : 'Activate brand'}>
+                              {b.is_active ? (
+                                <span className="badge success" style={{ padding: '2px 6px', fontSize: '10px' }}>Active</span>
+                              ) : (
+                                <span className="badge inactive" style={{ padding: '2px 6px', fontSize: '10px' }}>Inactive</span>
+                              )}
+                            </button>
+                          </td>
+                          <td>
+                            <div className="admin-table-actions">
+                              <button onClick={() => handleOpenEditBrand(b)} className="admin-action-btn edit" style={{ padding: '4px' }}><Edit2 size={13} /></button>
+                              <button onClick={() => handleDeleteBrand(b.id, b.name)} className="admin-action-btn delete" style={{ padding: '4px' }}><Trash2 size={13} /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {brands.length > 4 && (
+                  <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedBrands(!expandedBrands)}
+                      className="admin-secondary-btn"
+                      style={{ width: '100%', justifyContent: 'center', fontSize: '12px', padding: '6px 12px' }}
+                    >
+                      {expandedBrands ? 'Show Less' : `Show More (${brands.length - 4} more)`}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -492,41 +508,55 @@ export default function AdminBrandsModels() {
                 {brands.length === 0 ? 'Configure at least one brand first.' : 'No phone models configured.'}
               </div>
             ) : (
-              <div className="admin-table-container">
-                <table className="admin-table" style={{ fontSize: '13px' }}>
-                  <thead>
-                    <tr>
-                      <th>Brand</th>
-                      <th>Model</th>
-                      <th>Active</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {models.map(m => (
-                      <tr key={m.id}>
-                        <td style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>{m.device_brands?.name || 'N/A'}</td>
-                        <td style={{ fontWeight: '600' }}>{m.name}</td>
-                        <td>
-                          <button onClick={() => handleToggleModelActive(m)} aria-label={m.is_active ? 'Deactivate model' : 'Activate model'}>
-                            {m.is_active ? (
-                              <span className="badge success" style={{ padding: '2px 6px', fontSize: '10px' }}>Active</span>
-                            ) : (
-                              <span className="badge inactive" style={{ padding: '2px 6px', fontSize: '10px' }}>Inactive</span>
-                            )}
-                          </button>
-                        </td>
-                        <td>
-                          <div className="admin-table-actions">
-                            <button onClick={() => handleOpenEditModel(m)} className="admin-action-btn edit" style={{ padding: '4px' }}><Edit2 size={13} /></button>
-                            <button onClick={() => handleDeleteModel(m.id, m.name)} className="admin-action-btn delete" style={{ padding: '4px' }}><Trash2 size={13} /></button>
-                          </div>
-                        </td>
+              <>
+                <div className="admin-table-container">
+                  <table className="admin-table" style={{ fontSize: '13px' }}>
+                    <thead>
+                      <tr>
+                        <th>Brand</th>
+                        <th>Model</th>
+                        <th>Active</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {(expandedModels ? models : models.slice(0, 4)).map(m => (
+                        <tr key={m.id}>
+                          <td style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>{m.device_brands?.name || 'N/A'}</td>
+                          <td style={{ fontWeight: '600' }}>{m.name}</td>
+                          <td>
+                            <button onClick={() => handleToggleModelActive(m)} aria-label={m.is_active ? 'Deactivate model' : 'Activate model'}>
+                              {m.is_active ? (
+                                <span className="badge success" style={{ padding: '2px 6px', fontSize: '10px' }}>Active</span>
+                              ) : (
+                                <span className="badge inactive" style={{ padding: '2px 6px', fontSize: '10px' }}>Inactive</span>
+                              )}
+                            </button>
+                          </td>
+                          <td>
+                            <div className="admin-table-actions">
+                              <button onClick={() => handleOpenEditModel(m)} className="admin-action-btn edit" style={{ padding: '4px' }}><Edit2 size={13} /></button>
+                              <button onClick={() => handleDeleteModel(m.id, m.name)} className="admin-action-btn delete" style={{ padding: '4px' }}><Trash2 size={13} /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {models.length > 4 && (
+                  <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedModels(!expandedModels)}
+                      className="admin-secondary-btn"
+                      style={{ width: '100%', justifyContent: 'center', fontSize: '12px', padding: '6px 12px' }}
+                    >
+                      {expandedModels ? 'Show Less' : `Show More (${models.length - 4} more)`}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

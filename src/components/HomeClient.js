@@ -13,6 +13,7 @@ import ProductGrid from './ProductGrid';
 import ProductDetailModal from './ProductDetailModal';
 import { useShop } from '../context/ShopContext';
 import useBackButtonClose from '../hooks/useBackButtonClose';
+import useBodyScrollLock from '../hooks/useBodyScrollLock';
 
 export default function HomeClient() {
   const { deviceBrands, deviceModels, categories, products, productsLoading, settings } = useShop();
@@ -52,6 +53,8 @@ export default function HomeClient() {
     onClose: () => setExpandedCategories(false),
     stateKey: 'expanded-categories'
   });
+
+  useBodyScrollLock(!!expandedSection || expandedCategories);
 
   // Resize listener for responsive limit calculations
   useEffect(() => {

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Save, RefreshCw, Upload, Image as ImageIcon, CheckCircle, Plus, Trash2, ArrowUp, ArrowDown, Settings, Megaphone, Layout, Grid, GripVertical, X } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { useShop, parseSettings } from '../../../context/ShopContext';
+import useBodyScrollLock from '../../../hooks/useBodyScrollLock';
 
 export default function AdminSettings() {
   const { settings: shopSettings, refreshShopData } = useShop();
@@ -45,6 +46,8 @@ export default function AdminSettings() {
   const [activeSelectorSectionId, setActiveSelectorSectionId] = useState(null);
   const activeSection = sections.find(s => s.id === activeSelectorSectionId);
   const [expandedSections, setExpandedSections] = useState({});
+  const [expandedSelectorSelected, setExpandedSelectorSelected] = useState(false);
+  const [expandedSelectorCatalog, setExpandedSelectorCatalog] = useState(false);
 
   const toggleSectionExpanded = (sectionId) => {
     setExpandedSections(prev => ({
@@ -154,6 +157,8 @@ export default function AdminSettings() {
         console.error('Failed to load categories list:', e);
       }
     };
+
+    useBodyScrollLock(!!activeSelectorSectionId);
   
     useEffect(() => {
       fetchSettings();
@@ -753,7 +758,7 @@ export default function AdminSettings() {
                 <label className="form-label">Shop Name *</label>
                 <input
                   type="text"
-                  placeholder="COVERS ZONE"
+                  placeholder={shopSettings?.shop_name || "MahaMaya Mobiles"}
                   value={formData.shop_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, shop_name: e.target.value }))}
                   required
@@ -824,7 +829,7 @@ export default function AdminSettings() {
                 <label className="form-label">Footer Copyright Statement</label>
                 <input
                   type="text"
-                  placeholder="© 2026 COVERS ZONE. All rights reserved."
+                  placeholder={`© ${new Date().getFullYear()} ${shopSettings?.shop_name || "MahaMaya Mobiles"}. All rights reserved.`}
                   value={formData.footer_copyright}
                   onChange={(e) => setFormData(prev => ({ ...prev, footer_copyright: e.target.value }))}
                   className="form-input"
@@ -883,7 +888,7 @@ export default function AdminSettings() {
                       style={{ display: 'none' }}
                     />
                     <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>
-                      PNG, JPG, SVG are supported. Square formats are recommended.
+                      PNG, JPG, SVG supported • 1000 × 250 px recommended
                     </p>
                   </div>
                 </div>
@@ -1088,7 +1093,7 @@ export default function AdminSettings() {
                       </div>
 
                       {/* Fields grid */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                      <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                         <div className="form-group">
                           <label className="form-label" style={{ fontSize: '10px' }}>Card Tag Sticker</label>
                           <input
@@ -1185,7 +1190,7 @@ export default function AdminSettings() {
               
               {/* Homepage Dynamic Sections */}
               <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
                   <div>
                     <h3 style={{ fontSize: '16px', fontWeight: '700' }}>Homepage Dynamic Sections</h3>
                     <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -1257,8 +1262,8 @@ export default function AdminSettings() {
                           </button>
                         </div>
 
-                        {/* Fields grid */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                         {/* Fields grid */}
+                        <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                           <div className="form-group">
                             <label className="form-label" style={{ fontSize: '11px' }}>Section Title / Heading</label>
                             <input
@@ -1331,7 +1336,7 @@ export default function AdminSettings() {
                         {/* Manual Products Selector */}
                         {section.type !== 'categories' && section.mode === 'manual' && (
                           <div style={{ marginTop: '12px', borderTop: '1px dashed var(--border-color)', paddingTop: '12px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
                               <label className="form-label" style={{ fontSize: '11px', fontWeight: '700', margin: 0 }}>Selected Section Products ({section.productIds?.length || 0})</label>
                               <button
                                 type="button"
@@ -1506,7 +1511,7 @@ export default function AdminSettings() {
                     </label>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                  <div className="admin-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
                     <div className="form-group">
                       <label className="form-label">CTA Section Title</label>
                       <input
@@ -1547,7 +1552,7 @@ export default function AdminSettings() {
                       <label className="form-label">Default WhatsApp Pre-filled Message</label>
                       <input
                         type="text"
-                        placeholder="e.g. Hello COVERS ZONE, I have a query about a phone accessory."
+                        placeholder={`e.g. Hello ${shopSettings?.shop_name || "MahaMaya Mobiles"}, I have a query about a phone accessory.`}
                         value={formData.cta_whatsapp_text}
                         onChange={(e) => setFormData(prev => ({ ...prev, cta_whatsapp_text: e.target.value }))}
                         disabled={!formData.cta_enabled}
@@ -1588,10 +1593,7 @@ export default function AdminSettings() {
       {/* Select Products Panel Overlay Modal */}
       {activeSelectorSectionId && activeSection && (
         <div className="modal-overlay" style={{ zIndex: 1100 }}>
-          <div className="modal-content" style={{ 
-            maxWidth: '900px', 
-            width: '95%', 
-            height: '80vh', 
+          <div className="modal-content admin-products-selector-modal" style={{ 
             display: 'flex', 
             flexDirection: 'column', 
             overflow: 'hidden',
@@ -1631,12 +1633,12 @@ export default function AdminSettings() {
             </div>
 
             {/* Split Content Area */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', flex: 1, overflow: 'hidden' }}>
+            <div className="admin-modal-split-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', flex: 1, overflow: 'hidden' }}>
               
               {/* Left Column: Selected Products (Drag & Drop Reordering) */}
               <div style={{ display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border-color)', overflow: 'hidden', padding: '16px', background: 'var(--bg-secondary)' }}>
                 <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
-                  {(activeSection.productIds || []).map((pId, pIdx) => {
+                  {((activeSection.productIds || []).slice(0, expandedSelectorSelected ? undefined : 4)).map((pId, pIdx) => {
                     const product = productsList.find(p => String(p.id) === String(pId));
                     return (
                       <div 
@@ -1714,12 +1716,24 @@ export default function AdminSettings() {
                     <span style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '20px', fontStyle: 'italic' }}>No products selected yet. Add from the right.</span>
                   )}
                 </div>
+                {activeSection.productIds && activeSection.productIds.length > 4 && (
+                  <div style={{ padding: '8px 0 0 0', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedSelectorSelected(!expandedSelectorSelected)}
+                      className="admin-secondary-btn"
+                      style={{ width: '100%', justifyContent: 'center', fontSize: '12px', padding: '6px 12px' }}
+                    >
+                      {expandedSelectorSelected ? 'Show Less' : `Show More (${activeSection.productIds.length - 4} more)`}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Right Column: All Products Catalog with Filters */}
               <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px' }}>
                 {/* Filters Row */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                <div className="admin-quick-actions-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
                   <div className="form-group" style={{ margin: 0, gap: '4px' }}>
                     <label className="form-label" style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>Category</label>
                     <select
@@ -1761,8 +1775,8 @@ export default function AdminSettings() {
 
                 {/* Catalog List */}
                 <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
-                  {productsList
-                    .filter(p => {
+                  {(() => {
+                    const filteredCatalog = productsList.filter(p => {
                       const isAdded = (activeSection.productIds || []).some(id => String(id) === String(p.id));
                       if (isAdded) return false;
 
@@ -1770,44 +1784,62 @@ export default function AdminSettings() {
                       if (secFilters.category && p.category_id !== secFilters.category) return false;
                       if (secFilters.search && !p.name.toLowerCase().includes(secFilters.search.toLowerCase())) return false;
                       return true;
-                    })
-                    .map(product => {
-                      return (
-                        <div 
-                          key={product.id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '10px 12px',
-                            background: 'var(--bg-primary)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: 'var(--radius-md)',
-                            transition: 'all 0.2s ease'
-                          }}
-                        >
-                          <span style={{ fontSize: '13px', fontWeight: '500' }}>{product.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleSectionProductAdd(activeSection.id, product.id)}
-                            className="admin-primary-btn"
-                            style={{ 
-                              padding: '4px 10px', 
-                              fontSize: '11px',
-                              borderRadius: 'var(--radius-full)',
-                              background: 'var(--bg-dark)',
-                              color: 'var(--text-light)',
-                              border: 'none'
+                    });
+                    
+                    const slicedCatalog = expandedSelectorCatalog ? filteredCatalog : filteredCatalog.slice(0, 4);
+                    
+                    return (
+                      <>
+                        {slicedCatalog.map(product => (
+                          <div 
+                            key={product.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '10px 12px',
+                              background: 'var(--bg-primary)',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: 'var(--radius-md)',
+                              transition: 'all 0.2s ease'
                             }}
                           >
-                            Add
-                          </button>
-                        </div>
-                      );
-                    })}
-                  {productsList.length === 0 && (
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>No products found in database.</span>
-                  )}
+                            <span style={{ fontSize: '13px', fontWeight: '500' }}>{product.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleSectionProductAdd(activeSection.id, product.id)}
+                              className="admin-primary-btn"
+                              style={{ 
+                                padding: '4px 10px', 
+                                fontSize: '11px',
+                                borderRadius: 'var(--radius-full)',
+                                background: 'var(--bg-dark)',
+                                color: 'var(--text-light)',
+                                border: 'none'
+                              }}
+                            >
+                              Add
+                            </button>
+                          </div>
+                        ))}
+                        {filteredCatalog.length > 4 && (
+                          <div style={{ padding: '8px 0 0 0', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
+                            <button
+                              type="button"
+                              onClick={() => setExpandedSelectorCatalog(!expandedSelectorCatalog)}
+                              className="admin-secondary-btn"
+                              style={{ width: '100%', justifyContent: 'center', fontSize: '12px', padding: '6px 12px' }}
+                            >
+                              {expandedSelectorCatalog ? 'Show Less' : `Show More (${filteredCatalog.length - 4} more)`}
+                            </button>
+                          </div>
+                        )}
+                        {filteredCatalog.length === 0 && (
+                          <span style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>No products found.</span>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
 
