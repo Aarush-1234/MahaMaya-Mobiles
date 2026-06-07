@@ -1679,7 +1679,10 @@ button {
   border-top: 1px solid var(--border-color);
   padding-top: 24px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
   font-size: 13px;
   color: var(--text-muted);
 }
@@ -2904,4 +2907,51 @@ vercel-live-feedback {
     max-height: none !important;
     flex: none !important;
   }
+}
+
+/* Social Links Hover Effects & Layout */
+.footer-social-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-social-icon-link {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.footer-social-icon-link:hover {
+  color: var(--accent-yellow);
+  transform: translateY(-2px);
+}
+
+.about-social-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.about-social-icon-link {
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.about-social-icon-link:hover {
+  color: var(--accent-yellow);
+  transform: translateY(-2px);
+}
+
+.icon-picker-btn:hover {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--text-primary) !important;
+  transform: scale(1.05);
 }

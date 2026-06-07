@@ -1,16 +1,46 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, RefreshCw, Upload, Image as ImageIcon, CheckCircle, Plus, Trash2, ArrowUp, ArrowDown, Settings, Megaphone, Layout, Grid, GripVertical, X } from 'lucide-react';
+import { Save, RefreshCw, Upload, Image as ImageIcon, CheckCircle, Plus, Trash2, ArrowUp, ArrowDown, Settings, Megaphone, Layout, Grid, GripVertical, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { useShop, parseSettings } from '../../../context/ShopContext';
 import useBodyScrollLock from '../../../hooks/useBodyScrollLock';
+import SocialIcon from '../../../components/SocialIcon';
+
+const BUILTIN_ICONS = [
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'facebook', label: 'Facebook' },
+  { key: 'youtube', label: 'YouTube' },
+  { key: 'twitter', label: 'X / Twitter' },
+  { key: 'google-maps', label: 'Google Maps' },
+  { key: 'linkedin', label: 'LinkedIn' },
+  { key: 'globe', label: 'Globe' },
+  { key: 'link', label: 'Link' },
+  { key: 'external-link', label: 'External Link' },
+  { key: 'phone', label: 'Phone' },
+  { key: 'mail', label: 'Mail' },
+  { key: 'map-pin', label: 'Map Pin' },
+  { key: 'store', label: 'Store' },
+  { key: 'shopping-bag', label: 'Shopping Bag' },
+  { key: 'support', label: 'Support' },
+  { key: 'star', label: 'Star' },
+  { key: 'heart', label: 'Heart' },
+  { key: 'home', label: 'Home' },
+  { key: 'info', label: 'Info' }
+];
 
 export default function AdminSettings() {
   const { settings: shopSettings, refreshShopData } = useShop();
 
   // Tab State
   const [activeTab, setActiveTab] = useState('general'); // general, announcement, hero, promo
+
+  // Social Links States
+  const [socialLinks, setSocialLinks] = useState([]);
+  const [deletedSocialLinkIds, setDeletedSocialLinkIds] = useState([]);
+  const [socialLinksLoading, setSocialLinksLoading] = useState(true);
+  const [activeIconPickerLinkId, setActiveIconPickerLinkId] = useState(null);
+  const [socialLinksExpanded, setSocialLinksExpanded] = useState(false);
 
   // Settings states
   const [formData, setFormData] = useState({
@@ -158,12 +188,89 @@ export default function AdminSettings() {
       }
     };
 
+    const fetchSocialLinks = async () => {
+      try {
+        setSocialLinksLoading(true);
+        const { data, error } = await supabase
+          .from('social_links')
+          .select('*')
+          .order('display_order', { ascending: true });
+        
+        if (error) {
+          console.error('Error fetching social links:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+          throw error;
+        }
+        setSocialLinks(data || []);
+      } catch (err) {
+        console.error('Error loading social links:', err);
+        setErrorMsg(`Failed to load social links: ${err.message || err}`);
+      } finally {
+        setSocialLinksLoading(false);
+      }
+    };
+
+    const handleAddSocialLink = () => {
+      const newLink = {
+        id: `temp-${Date.now()}`,
+        label: '',
+        url: '',
+        icon_key: 'link',
+        display_order: socialLinks.length + 1,
+        is_active: true,
+        is_default: false
+      };
+      setSocialLinks(prev => [...prev, newLink]);
+      setSocialLinksExpanded(true);
+    };
+
+    const handleDeleteSocialLink = (id) => {
+      if (!String(id).startsWith('temp-')) {
+        setDeletedSocialLinkIds(prev => [...prev, id]);
+      }
+      setSocialLinks(prev => prev.filter(link => link.id !== id));
+    };
+
+    const handleSocialLinkChange = (id, field, value) => {
+      setSocialLinks(prev =>
+        prev.map(link => link.id === id ? { ...link, [field]: value } : link)
+      );
+    };
+
+    const handleMoveLinkUp = (idx) => {
+      if (idx === 0) return;
+      setSocialLinks(prev => {
+        const copy = [...prev];
+        const temp = copy[idx];
+        copy[idx] = copy[idx - 1];
+        copy[idx - 1] = temp;
+        return copy.map((link, i) => ({ ...link, display_order: i + 1 }));
+      });
+    };
+
+    const handleMoveLinkDown = (idx) => {
+      if (idx === socialLinks.length - 1) return;
+      setSocialLinks(prev => {
+        const copy = [...prev];
+        const temp = copy[idx];
+        copy[idx] = copy[idx + 1];
+        copy[idx + 1] = temp;
+        return copy.map((link, i) => ({ ...link, display_order: i + 1 }));
+      });
+    };
+
     useBodyScrollLock(!!activeSelectorSectionId);
+    useBodyScrollLock(!!activeIconPickerLinkId);
   
     useEffect(() => {
       fetchSettings();
       fetchProductsList();
       fetchCategories();
+      fetchSocialLinks();
     }, []);
 
   const handleFilterChange = (sectionId, field, value) => {
@@ -600,6 +707,73 @@ export default function AdminSettings() {
         if (error) throw error;
       }
 
+      // 4. Save/Update/Delete Social Links
+      // A. Delete removed links
+      if (deletedSocialLinkIds.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('social_links')
+          .delete()
+          .in('id', deletedSocialLinkIds);
+        
+        if (deleteError) {
+          console.error('Error deleting social links:', {
+            message: deleteError.message,
+            details: deleteError.details,
+            hint: deleteError.hint,
+            code: deleteError.code
+          });
+          throw deleteError;
+        }
+      }
+
+      // B. Insert / Update remaining links
+      for (const link of socialLinks) {
+        const linkPayload = {
+          label: link.label?.trim() || '',
+          url: link.url?.trim() || '',
+          icon_key: link.icon_key,
+          display_order: link.display_order,
+          is_active: link.is_active,
+          is_default: link.is_default
+        };
+
+        if (String(link.id).startsWith('temp-')) {
+          // Insert new custom link
+          const { error: insertError } = await supabase
+            .from('social_links')
+            .insert([linkPayload]);
+          
+          if (insertError) {
+            console.error('Error inserting social link:', {
+              message: insertError.message,
+              details: insertError.details,
+              hint: insertError.hint,
+              code: insertError.code
+            });
+            throw insertError;
+          }
+        } else {
+          // Update existing link
+          const { error: updateError } = await supabase
+            .from('social_links')
+            .update(linkPayload)
+            .eq('id', link.id);
+          
+          if (updateError) {
+            console.error('Error updating social link:', {
+              message: updateError.message,
+              details: updateError.details,
+              hint: updateError.hint,
+              code: updateError.code
+            });
+            throw updateError;
+          }
+        }
+      }
+
+      // Reset deleted links array
+      setDeletedSocialLinkIds([]);
+
       // Clear local file states
       setNewLogoFile(null);
       setNewHeroFile(null);
@@ -608,6 +782,7 @@ export default function AdminSettings() {
 
       // Refresh data
       await fetchSettings();
+      await fetchSocialLinks();
       await refreshShopData(); // Refresh global shop context
       
       setSaveSuccess(true);
@@ -845,6 +1020,184 @@ export default function AdminSettings() {
                   onChange={(e) => setFormData(prev => ({ ...prev, ordering_guidelines: e.target.value }))}
                   className="form-input"
                 />
+              </div>
+
+              {/* Social & Website Links Section */}
+              <div className="form-group full-width" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '20px', marginTop: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <h3 className="form-label" style={{ fontSize: '14px', fontWeight: '800', margin: 0, textTransform: 'none', color: 'var(--text-primary)' }}>Social & Website Links</h3>
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                      Manage links to social media profiles and external websites. Publicly visible icons will appear in the Footer and About Us popup.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddSocialLink}
+                    className="admin-primary-btn"
+                    style={{ padding: '6px 12px', fontSize: '12px' }}
+                  >
+                    <Plus size={14} />
+                    Add Custom Link
+                  </button>
+                </div>
+
+                {socialLinksLoading ? (
+                  <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <RefreshCw size={20} style={{ animation: 'spin 1.5s linear infinite', margin: '0 auto 8px auto' }} />
+                    <span>Loading social links...</span>
+                  </div>
+                ) : socialLinks.length === 0 ? (
+                  <div style={{ padding: '30px', textAlign: 'center', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                    <span>No social links configured. Click "Add Custom Link" to add one.</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {(socialLinksExpanded ? socialLinks : socialLinks.slice(0, 2)).map((link) => {
+                      const idx = socialLinks.findIndex(l => l.id === link.id);
+                      return (
+                        <div
+                        key={link.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          background: 'var(--bg-secondary)',
+                          padding: '12px 16px',
+                          borderRadius: 'var(--radius-md)',
+                          border: '1px solid var(--border-color)',
+                          flexWrap: 'wrap'
+                        }}
+                      >
+                        {/* Drag indicator / Reorder controls */}
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => handleMoveLinkUp(idx)}
+                            className="admin-action-btn edit"
+                            style={{ padding: '4px', cursor: idx === 0 ? 'not-allowed' : 'pointer' }}
+                            title="Move Up"
+                          >
+                            <ArrowUp size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === socialLinks.length - 1}
+                            onClick={() => handleMoveLinkDown(idx)}
+                            className="admin-action-btn edit"
+                            style={{ padding: '4px', cursor: idx === socialLinks.length - 1 ? 'not-allowed' : 'pointer' }}
+                            title="Move Down"
+                          >
+                            <ArrowDown size={14} />
+                          </button>
+                        </div>
+
+                        {/* Icon Picker Trigger */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Icon</span>
+                          <button
+                            type="button"
+                            onClick={() => setActiveIconPickerLinkId(link.id)}
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: 'var(--radius-sm)',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-primary)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              color: 'var(--text-primary)'
+                            }}
+                            title="Choose Icon"
+                          >
+                            <SocialIcon iconKey={link.icon_key} size={20} />
+                          </button>
+                        </div>
+
+                        {/* Label field */}
+                        <div style={{ flex: '1 1 180px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Label</span>
+                          <input
+                            type="text"
+                            value={link.label || ''}
+                            onChange={(e) => handleSocialLinkChange(link.id, 'label', e.target.value)}
+                            placeholder="e.g. Instagram, WhatsApp"
+                            className="form-input"
+                            style={{ padding: '8px 12px', fontSize: '13px' }}
+                          />
+                        </div>
+
+                        {/* URL field */}
+                        <div style={{ flex: '2 1 280px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>URL</span>
+                          <input
+                            type="text"
+                            value={link.url || ''}
+                            onChange={(e) => handleSocialLinkChange(link.id, 'url', e.target.value)}
+                            placeholder="https://instagram.com/myusername"
+                            className="form-input"
+                            style={{ padding: '8px 12px', fontSize: '13px' }}
+                          />
+                        </div>
+
+                        {/* Active checkbox */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '80px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Active</span>
+                          <label className="form-checkbox-group" style={{ margin: 0 }}>
+                            <input
+                              type="checkbox"
+                              checked={link.is_active ?? true}
+                              onChange={(e) => handleSocialLinkChange(link.id, 'is_active', e.target.checked)}
+                              className="form-checkbox"
+                            />
+                          </label>
+                        </div>
+
+                        {/* Custom status indicator & delete button */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {!link.is_default ? (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSocialLink(link.id)}
+                              className="admin-action-btn delete"
+                              style={{ padding: '8px' }}
+                              title="Delete Link"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', padding: '0 8px', textTransform: 'uppercase' }} title="Default link cannot be deleted, but can be disabled.">
+                              Default
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                   })}
+                   {socialLinks.length > 2 && (
+                     <button
+                       type="button"
+                       onClick={() => setSocialLinksExpanded(!socialLinksExpanded)}
+                       className="admin-secondary-btn"
+                       style={{
+                         alignSelf: 'center',
+                         marginTop: '8px',
+                         padding: '6px 16px',
+                         fontSize: '13px',
+                         display: 'flex',
+                         alignItems: 'center',
+                         gap: '6px',
+                       }}
+                     >
+                       {socialLinksExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                       {socialLinksExpanded ? 'Show Less' : `Show More (${socialLinks.length - 2} more)`}
+                     </button>
+                   )}
+                 </div>
+               )}
               </div>
 
               {/* Logo Upload */}
@@ -1861,6 +2214,64 @@ export default function AdminSettings() {
               >
                 Go Back & Save Selection
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Icon Picker Overlay Modal */}
+      {activeIconPickerLinkId && (
+        <div className="modal-overlay" style={{ zIndex: 1200 }} onClick={() => setActiveIconPickerLinkId(null)}>
+          <div className="modal-content" style={{ 
+            maxWidth: '450px', 
+            padding: '24px', 
+            background: 'var(--bg-primary)', 
+            borderRadius: 'var(--radius-lg)',
+            display: 'block'
+          }} onClick={(e) => e.stopPropagation()}>
+            
+            <button onClick={() => setActiveIconPickerLinkId(null)} className="modal-close-btn" aria-label="Close modal">
+              <X size={20} />
+            </button>
+            
+            <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '16px', color: 'var(--text-primary)' }}>Choose Icon</h3>
+            
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(4, 1fr)', 
+              gap: '12px',
+              maxHeight: '300px',
+              overflowY: 'auto',
+              paddingRight: '4px'
+            }}>
+              {BUILTIN_ICONS.map((icon) => (
+                <button
+                  key={icon.key}
+                  type="button"
+                  onClick={() => {
+                    handleSocialLinkChange(activeIconPickerLinkId, 'icon_key', icon.key);
+                    setActiveIconPickerLinkId(null);
+                  }}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    padding: '10px',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    cursor: 'pointer',
+                    color: 'var(--text-primary)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  className="icon-picker-btn"
+                >
+                  <SocialIcon iconKey={icon.key} size={20} />
+                  <span style={{ fontSize: '10px', fontWeight: '500', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{icon.label}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>

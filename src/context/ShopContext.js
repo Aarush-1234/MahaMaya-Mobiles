@@ -126,6 +126,7 @@ export function ShopProvider({ children }) {
   const [deviceBrands, setDeviceBrands] = useState([]);
   const [deviceModels, setDeviceModels] = useState([]);
   const [products, setProducts] = useState([]);
+  const [socialLinks, setSocialLinks] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -210,6 +211,23 @@ export function ShopProvider({ children }) {
         setProducts(productsData);
       }
 
+      // 6. Fetch social links ordered by display_order
+      const { data: socialLinksData, error: socialLinksError } = await supabase
+        .from('social_links')
+        .select('*')
+        .order('display_order', { ascending: true });
+      
+      if (!socialLinksError && socialLinksData) {
+        setSocialLinks(socialLinksData);
+      } else if (socialLinksError) {
+        console.error('Error fetching social links in ShopContext:', {
+          message: socialLinksError.message,
+          details: socialLinksError.details,
+          hint: socialLinksError.hint,
+          code: socialLinksError.code
+        });
+      }
+
     } catch (err) {
       console.error('Error fetching shop data from Supabase:', err);
     } finally {
@@ -239,6 +257,7 @@ export function ShopProvider({ children }) {
         deviceModels,
         products,
         productsLoading,
+        socialLinks,
         isLoading,
         refreshShopData: fetchShopData
       }}

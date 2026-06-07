@@ -4,9 +4,10 @@ import React from 'react';
 import Link from 'next/link';
 import { Phone, MapPin, Mail, ShieldCheck } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
+import SocialIcon from './SocialIcon';
 
 export default function Footer() {
-  const { settings, categories } = useShop();
+  const { settings, categories, socialLinks } = useShop();
 
   return (
     <footer className="footer">
@@ -85,6 +86,25 @@ export default function Footer() {
         {/* Footer Bottom */}
         <div className="footer-bottom">
           <p>{settings.footer_copyright}</p>
+          {socialLinks && socialLinks.filter(l => l.is_active && l.url && l.url.trim() !== '').length > 0 && (
+            <div className="footer-social-links">
+              {socialLinks
+                .filter(l => l.is_active && l.url && l.url.trim() !== '')
+                .map((link) => (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={link.label || link.icon_key}
+                    className="footer-social-icon-link"
+                    title={link.label}
+                  >
+                    <SocialIcon iconKey={link.icon_key} size={18} />
+                  </a>
+                ))}
+            </div>
+          )}
         </div>
       </div>
     </footer>

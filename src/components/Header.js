@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Search, ShoppingBag, Smartphone, Sun, Moon, FolderOpen, ChevronUp, X, MapPin, Phone, Mail, Info } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useShop } from '../context/ShopContext';
+import SocialIcon from './SocialIcon';
 import useBackButtonClose from '../hooks/useBackButtonClose';
 import useBodyScrollLock from '../hooks/useBodyScrollLock';
 
@@ -198,7 +199,7 @@ const renderShopName = (name) => {
 
 export default function Header() {
   const { cartCount, setIsCartOpen } = useCart();
-  const { categories, settings, isLoading } = useShop();
+  const { categories, settings, isLoading, socialLinks } = useShop();
   const pathname = usePathname();
   const [theme, setTheme] = useState('light');
 
@@ -432,6 +433,26 @@ export default function Header() {
                   <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', marginTop: '20px' }}>
                     <h4 style={{ fontSize: '12px', fontWeight: '750', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px', letterSpacing: '0.05em' }}>Ordering Guidelines</h4>
                     <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: '1.5' }}>{settings.ordering_guidelines}</p>
+                  </div>
+                )}
+
+                {socialLinks && socialLinks.filter(l => l.is_active && l.url && l.url.trim() !== '').length > 0 && (
+                  <div className="about-social-links" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '24px', flexWrap: 'wrap' }}>
+                    {socialLinks
+                      .filter(l => l.is_active && l.url && l.url.trim() !== '')
+                      .map((link) => (
+                        <a
+                          key={link.id}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={link.label || link.icon_key}
+                          className="about-social-icon-link"
+                          title={link.label}
+                        >
+                          <SocialIcon iconKey={link.icon_key} size={20} />
+                        </a>
+                      ))}
                   </div>
                 )}
               </>
